@@ -1,20 +1,30 @@
 from bs4 import BeautifulSoup
 import requests
-import re
 
-url = "https://anilist.co/search/anime"
+episode_dict = {}
+page_number = 0
+animeTitle = "sword art online"
+# need to grab data from a search query.
+while True:
+    page_number += 1
+    url = "https://nyaa.si/user/Ember_Encodes?p=" + str(page_number)
+    result = requests.get(url)
+    if result.status_code != 200:
+        break
 
-result = requests.get(url)
-doc = BeautifulSoup(result.text, "html.parser")
-stuff = doc.find_all(text=re.compile("Jujutsu"), limit=100)
-for ice in stuff:
-    print(ice.strip())
-# print(doc)
+    doc = BeautifulSoup(result.text, "html.parser")
+    tableRows = doc.find_all('tr')
 
-# need the text field to be based on the input or saved titles.
+    for tr in tableRows:
+        downloadTitle = tr.text.lower()
+        if animeTitle in downloadTitle:
+            a_tags = tr.find_all("a")
+            for a in a_tags:
+                dLink = a["href"]
+                if "magnet" in dLink:
+                    break
+                if "view" in a["href"]:
+                    epiNum = a.text
+            episode_dict[epiNum] = dLink
 
-# user enters in anime name
-# returns list of anime close to entry
-# user picks the anime to add
-# this will save the anime to the db list
-#
+print(dLink)
